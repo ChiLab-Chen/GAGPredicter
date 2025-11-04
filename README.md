@@ -1,6 +1,6 @@
 # GAGPredict Pro - Heparan Sulfate Cleavage Site Prediction Tool
 
-GAGPredict Pro is a deep learning-based graphical user interface tool designed to predict enzyme cleavage sites in Heparan Sulfate (HS) glycan sequences. The tool utilizes a Recurrent Neural Network (RNN) model to accurately predict the breaking positions of glycan molecules during enzymatic digestion.
+GAGPredict Pro is a deep learning-based graphical user interface tool designed to predict the cleavage sites of heparan sulfate (HS) glycans in tandem mass spectrometry.
 
 ## 🧬 Project Overview
 
