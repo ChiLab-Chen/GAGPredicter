@@ -1,7 +1,7 @@
 """
-模型加载器模块
+Ensemble Model Loader Module
 
-负责加载和管理集成模型
+Responsible for loading and managing ensemble models
 """
 
 import torch
@@ -11,7 +11,7 @@ import glob
 from typing import List, Dict, Optional, Tuple
 import sys
 
-# 添加项目根目录到路径
+# Add project root to path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, '..'))
 if project_root not in sys.path:
@@ -22,16 +22,16 @@ from models.model import DynamicCleavageRNN
 
 def find_latest_ensemble_model(checkpoints_dir: Optional[str] = None) -> str:
     """
-    查找最新的集成模型信息文件
+    Find the latest ensemble model info file
     
-    参数:
-        checkpoints_dir: 检查点目录路径，如果为None则使用默认路径
+    Parameters:
+        checkpoints_dir: Checkpoint directory path, if None uses default path
         
-    返回:
-        最新集成模型信息文件的完整路径
+    Returns:
+        Full path to the latest ensemble model info file
         
-    异常:
-        FileNotFoundError: 如果未找到任何集成模型文件
+    Exceptions:
+        FileNotFoundError: If no ensemble model files are found
     """
     if checkpoints_dir is None:
         checkpoints_dir = os.path.join(project_root, 'models', 'checkpoints')
@@ -40,11 +40,11 @@ def find_latest_ensemble_model(checkpoints_dir: Optional[str] = None) -> str:
     
     if not ensemble_files:
         raise FileNotFoundError(
-            f"未找到集成模型信息文件，请检查目录: {checkpoints_dir}\n"
-            "请确保已运行 02_retrain.ipynb 生成集成模型"
+            f"Ensemble model info file not found, please check directory: {checkpoints_dir}\n"
+            "Make sure you have run 02_retrain.ipynb to generate the ensemble model"
         )
     
-    # 按文件名排序，取最新的（时间戳最大的）
+    # Sort by filename and take the latest (largest timestamp)
     ensemble_files.sort()
     latest_file = ensemble_files[-1]
     
@@ -53,18 +53,18 @@ def find_latest_ensemble_model(checkpoints_dir: Optional[str] = None) -> str:
 
 def load_ensemble_info(ensemble_info_path: Optional[str] = None) -> Dict:
     """
-    加载集成模型信息
+    Load ensemble model info
     
-    参数:
-        ensemble_info_path: 集成模型信息文件路径，如果为None则自动查找最新文件
+    Parameters:
+        ensemble_info_path: Ensemble model info file path, if None automatically finds the latest file
         
-    返回:
-        集成模型信息字典
+    Returns:
+        Ensemble model info dictionary
     """
     if ensemble_info_path is None:
         ensemble_info_path = find_latest_ensemble_model()
     
-    print(f"加载集成模型信息: {ensemble_info_path}")
+    print(f"Loading ensemble model info: {ensemble_info_path}")
     
     with open(ensemble_info_path, 'rb') as f:
         ensemble_info = pickle.load(f)
@@ -74,29 +74,29 @@ def load_ensemble_info(ensemble_info_path: Optional[str] = None) -> Dict:
 
 def load_fold_models(ensemble_info: Dict) -> List[DynamicCleavageRNN]:
     """
-    加载所有fold模型
+    Load all fold models
     
-    参数:
-        ensemble_info: 集成模型信息字典
+    Parameters:
+        ensemble_info: Ensemble model info dictionary
         
-    返回:
-        加载的模型列表
+    Returns:
+        List of loaded models
     """
     models = []
     model_params = ensemble_info['model_params']
     fold_model_paths = ensemble_info['model_paths']
     
-    print(f"加载 {len(fold_model_paths)} 个fold模型...")
+    print(f"Loading {len(fold_model_paths)} fold models...")
     
     for i, model_path in enumerate(fold_model_paths):
-        print(f"  加载 Fold {i+1}: {os.path.basename(model_path)}")
+        print(f"  Loading Fold {i+1}: {os.path.basename(model_path)}")
         
-        # 创建模型实例
+        # Create model instance
         model = DynamicCleavageRNN(**model_params)
         
-        # 加载预训练权重
+        # Load pretrained weights
         model.load_state_dict(torch.load(model_path, map_location='cpu'))
-        model.eval()  # 设置为评估模式
+        model.eval()  # Set to evaluation mode
         
         models.append(model)
     
@@ -105,27 +105,27 @@ def load_fold_models(ensemble_info: Dict) -> List[DynamicCleavageRNN]:
 
 def load_ensemble_model(ensemble_info_path: Optional[str] = None) -> Tuple[List[DynamicCleavageRNN], Dict]:
     """
-    一次性加载完整的集成模型
+    Load complete ensemble model in one go
     
-    参数:
-        ensemble_info_path: 集成模型信息文件路径
+    Parameters:
+        ensemble_info_path: Ensemble model info file path
         
-    返回:
-        (models, ensemble_info): 模型列表和集成信息
+    Returns:
+        (models, ensemble_info): Model list and ensemble info
     """
-    # 加载集成模型信息
+    # Load ensemble model info
     ensemble_info = load_ensemble_info(ensemble_info_path)
     
-    # 加载所有fold模型
+    # Load all fold models
     models = load_fold_models(ensemble_info)
     
-    print(f"✅ 集成模型加载完成！包含 {len(models)} 个fold模型")
+    print(f"✅ Ensemble model loading completed! Contains {len(models)} fold models")
     
-    # 显示集成模型性能统计
+    # Display ensemble model performance statistics
     avg_metrics = ensemble_info['avg_metrics']
     std_metrics = ensemble_info['std_metrics']
     
-    print(f"\n集成模型平均性能:")
+    print(f"\nEnsemble model average performance:")
     print(f"AUC-ROC: {avg_metrics['auc_roc']:.4f} ± {std_metrics['auc_roc_std']:.4f}")
     print(f"F1: {avg_metrics['f1']:.4f} ± {std_metrics['f1_std']:.4f}")
     print(f"Accuracy: {avg_metrics['accuracy']:.4f} ± {std_metrics['accuracy_std']:.4f}")
@@ -135,13 +135,13 @@ def load_ensemble_model(ensemble_info_path: Optional[str] = None) -> Tuple[List[
 
 def validate_model_files(ensemble_info: Dict) -> bool:
     """
-    验证模型文件是否存在
+    Validate that model files exist
     
-    参数:
-        ensemble_info: 集成模型信息字典
+    Parameters:
+        ensemble_info: Ensemble model info dictionary
         
-    返回:
-        所有模型文件是否都存在
+    Returns:
+        Whether all model files exist
     """
     fold_model_paths = ensemble_info['model_paths']
     
@@ -151,7 +151,7 @@ def validate_model_files(ensemble_info: Dict) -> bool:
             missing_files.append(model_path)
     
     if missing_files:
-        print(f"❌ 以下模型文件缺失:")
+        print(f"❌ The following model files are missing:")
         for file in missing_files:
             print(f"  - {file}")
         return False
@@ -161,13 +161,13 @@ def validate_model_files(ensemble_info: Dict) -> bool:
 
 def get_model_info(ensemble_info_path: Optional[str] = None) -> Dict:
     """
-    获取模型信息概要
+    Get model info summary
     
-    参数:
-        ensemble_info_path: 集成模型信息文件路径
+    Parameters:
+        ensemble_info_path: Ensemble model info file path
         
-    返回:
-        模型信息概要字典
+    Returns:
+        Model info summary dictionary
     """
     ensemble_info = load_ensemble_info(ensemble_info_path)
     
@@ -181,4 +181,4 @@ def get_model_info(ensemble_info_path: Optional[str] = None) -> Dict:
         "files_exist": validate_model_files(ensemble_info)
     }
     
-    return info 
+    return info
