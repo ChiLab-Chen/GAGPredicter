@@ -6,7 +6,7 @@ import pandas as pd
 import math
 import threading
 
-# --- 将项目根目录添加到sys.path ---
+
 try:
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_dir, '..'))
@@ -17,14 +17,14 @@ except NameError:
     if project_root not in sys.path:
         sys.path.append(project_root)
 
-# --- 导入预测器 ---
+
 try:
     from predictor.predictor import EnsemblePredictor
 except ImportError as e:
     messagebox.showerror("Import Error", f"Could not import the predictor module. Please ensure the project structure is correct.\nError: {e}")
     sys.exit(1)
 
-# --- 新增: 环形进度条组件 ---
+
 class CircularProgressbar(ctk.CTkFrame):
     def __init__(self, *args,
                  width=200,
@@ -119,7 +119,7 @@ class CircularProgressbar(ctk.CTkFrame):
         self.set_progress(0)
 
 
-# --- 主题与外观设置 ---
+
 ctk.set_appearance_mode("light")
 
 class ModernApp(ctk.CTk):
@@ -346,7 +346,7 @@ class ModernApp(ctk.CTk):
             self.set_ui_busy(True)
             result_dict = self.predictor.predict_single(seq, threshold=self.threshold)
             
-            # 修复：正确访问 statistics 中的字段
+            
             statistics = result_dict['statistics']
             consistency = result_dict['consistency']
             
